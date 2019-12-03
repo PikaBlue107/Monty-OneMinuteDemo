@@ -1,13 +1,14 @@
 package com.johnnietfeld.monty.one_minute_demo.model.list;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
 import com.johnnietfeld.monty.one_minute_demo.model.data.ClassifiedImage;
 
-public class ImageList {
+public class ImageList implements Iterable<ClassifiedImage> {
 
 	/** Internal LinkedList of Images, used to store them in randomized order */
 	LinkedList<ClassifiedImage> images;
@@ -177,6 +178,29 @@ public class ImageList {
 
 		// Return the retrieved Image
 		return front;
+	}
+
+	/**
+	 * Allows iteration over the Images in this ImageList without modification.
+	 * 
+	 * @return an Iterator over the ImageList for each ClassifiedImage in the List
+	 */
+	@Override
+	public Iterator<ClassifiedImage> iterator() {
+		return new Iterator<ClassifiedImage>() {
+
+			int idx = 0;
+
+			@Override
+			public boolean hasNext() {
+				return idx < images.size();
+			}
+
+			@Override
+			public ClassifiedImage next() {
+				return images.get(idx++);
+			}
+		};
 	}
 
 }

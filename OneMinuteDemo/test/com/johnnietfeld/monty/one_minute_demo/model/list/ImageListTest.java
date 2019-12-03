@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -94,7 +95,7 @@ public class ImageListTest {
 		} catch (NullPointerException e) {
 			// Correct exception thrown
 		}
-		
+
 		// Assert invalid make new ImageList with empty data set
 		try {
 			new ImageList(new ArrayList<ClassifiedImage>());
@@ -164,20 +165,46 @@ public class ImageListTest {
 
 		// Set randomize true for testing
 		test.setRandomizeCycle(true);
-		
+
 		// Set new expected array for second randomization
-		expected = new String[] {
-				"a.jpg: one",
-				"cat.jpg: two",
-				"rest.png: two",
-				"bot.jpg: two",
-				"man.jpg: two"
-		};
+		expected = new String[] { "a.jpg: one", "cat.jpg: two", "rest.png: two", "bot.jpg: two", "man.jpg: two" };
 
 		// Assert correct order
 		for (int i = 0; i < test.size(); i++) {
 			assertEquals(expected[i], test.next().toString());
 			assertEquals(4 - i, test.remaining());
+		}
+	}
+
+	@Test
+	public void testIterator() {
+
+		// Set the random seed
+		ImageList.setRandSeed(RAND_SEED);
+
+		// Make expected string array
+		String[] expected = new String[] { "man.jpg: two", "rest.png: two", "bot.jpg: two", "cat.jpg: two",
+				"a.jpg: one" };
+		
+		// Make ImageList from image set
+		ImageList test = new ImageList(images);
+
+		// Run iterator on list, pop a next element off. Repeat until remaining is 0
+		// Loop through the ImageList
+		for (int i = 0; i < test.size(); ++i) {
+
+			// Start an iterator at the head of the list, assert correct number of next elements
+			// Get iterator
+			Iterator<ClassifiedImage> it = test.iterator();
+			for (int j = 0; j < num_images - i; ++j) {
+				assertTrue("i = " + i + ", j = " + j, it.hasNext());
+				assertEquals(expected[i+j], it.next().toString());
+			}
+			assertFalse(it.hasNext());
+			
+			// Pop off the top element of the ImageList
+			assertEquals(expected[i], test.next().toString());
+
 		}
 	}
 
