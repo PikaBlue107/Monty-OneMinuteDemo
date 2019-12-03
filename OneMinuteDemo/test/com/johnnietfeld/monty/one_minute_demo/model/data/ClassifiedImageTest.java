@@ -18,20 +18,21 @@ import org.junit.Test;
 public class ClassifiedImageTest {
 
 	/** String of the file path of the Image used for testing */
-	private static final String IMAGE_PATH_STRING = "A.jpg";
-	/** File path to the Image used for testing */
-	private static final File IMAGE_PATH = new File(IMAGE_PATH_STRING);
+	private static final String IMAGE_PATH_STRING = "test-files/a.jpg";
 	/** BufferedImage object used for testing */
 	private static BufferedImage IMAGE;
 	/** String used to make the Category used in testing */
 	private static final String CATEGORY_STRING = "Cat";
 	/** Category used for testing */
 	private static final Category CATEGORY = new Category(CATEGORY_STRING);
+	/** Name used for testing */
+	private static final String NAME = "angry gay sounds";
 
 	@BeforeClass
 	public static void setupBefore() {
 		try {
-			IMAGE = ImageIO.read(IMAGE_PATH);
+			File imagePath = new File(IMAGE_PATH_STRING);
+			IMAGE = ImageIO.read(imagePath);
 		} catch (IOException e) {
 			fail("Could not load test image");
 			e.printStackTrace();
@@ -44,7 +45,7 @@ public class ClassifiedImageTest {
 		
 		// Assert invalid make new image with null image argument
 		try {
-			test = new ClassifiedImage(null, CATEGORY);
+			test = new ClassifiedImage(null, CATEGORY, NAME);
 			fail();
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
@@ -52,7 +53,23 @@ public class ClassifiedImageTest {
 		
 		// Assert invalid make new image with null category argument
 		try {
-			test = new ClassifiedImage(IMAGE, null);
+			test = new ClassifiedImage(IMAGE, null, NAME);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNull(test);
+		}
+		
+		// Assert invalid make new image with null name argument
+		try {
+			test = new ClassifiedImage(IMAGE, CATEGORY, null);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNull(test);
+		}
+		
+		// Assert invalid make new image with blank name argument
+		try {
+			test = new ClassifiedImage(IMAGE, CATEGORY, "   ");
 			fail();
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
@@ -60,9 +77,10 @@ public class ClassifiedImageTest {
 		
 		// Assert valid make new image with valid data
 		try {
-			test = new ClassifiedImage(IMAGE, CATEGORY);
+			test = new ClassifiedImage(IMAGE, CATEGORY, NAME);
 			assertEquals(IMAGE, test.getImage());
 			assertEquals(CATEGORY, test.getCategory());
+			assertEquals(NAME, test.getName());
 		} catch (IllegalArgumentException e) {
 			fail();
 		}
@@ -75,6 +93,12 @@ public class ClassifiedImageTest {
 		assertTrue(test.scoreCategory(new Category(CATEGORY_STRING)));
 		// Assert incorrect scoring on different category
 		assertFalse(test.scoreCategory(new Category("DIFFERENT")));
+	}
+	
+	@Test
+	public void testToString() {
+		ClassifiedImage test = new ClassifiedImage(IMAGE, CATEGORY, NAME);
+		assertEquals(NAME + ": " + CATEGORY_STRING, test.toString());
 	}
 
 }

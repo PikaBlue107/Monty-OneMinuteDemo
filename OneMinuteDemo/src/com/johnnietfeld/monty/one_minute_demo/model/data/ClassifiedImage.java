@@ -8,6 +8,8 @@ public class ClassifiedImage {
 	private Category category;
 	/** The Image contained by this object */
 	private BufferedImage image;
+	/** The name of this ClassifiedImage */
+	private String name;
 
 	/**
 	 * Makes a new ClassifiedImage with the provided Image and Category. Ensures that neither
@@ -17,9 +19,10 @@ public class ClassifiedImage {
 	 * @param category the Category for this Image
 	 * @throws IllegalArgumentException if either image or category is null
 	 */
-	public ClassifiedImage(BufferedImage image, Category category) {
+	public ClassifiedImage(BufferedImage image, Category category, String name) {
 		setImage(image);
 		setCategory(category);
+		setName(name);
 	}
 
 	/**
@@ -50,6 +53,20 @@ public class ClassifiedImage {
 		this.category = category;
 	}
 
+
+	/**
+	 * Setter used for error checking. Ensures the name provided is not null.
+	 * 
+	 * @param name the name to set
+	 * @throws IllegalArgumentException if name is null or blank
+	 */
+	private void setName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new IllegalArgumentException("Name used to construct ClassifiedImage object cannot be null or blank");
+		}
+		this.name = name;
+	}
+
 	/**
 	 * Simple getter for this Image's correct category
 	 * 
@@ -69,6 +86,15 @@ public class ClassifiedImage {
 	}
 
 	/**
+	 * Simple getter for this Image's stored name
+	 * 
+	 * @return the name field
+	 */
+	public String getName() {
+		return this.name;
+	}
+
+	/**
 	 * Judges whether a certain categorization of an image is correct, based on the
 	 * stored category. Uses Category.equals() to compare.
 	 * 
@@ -78,5 +104,10 @@ public class ClassifiedImage {
 	 */
 	public boolean scoreCategory(Category category) {
 		return category.equals(this.getCategory());
+	}
+	
+	@Override
+	public String toString() {
+		return name + ": " + category.toString();
 	}
 }
