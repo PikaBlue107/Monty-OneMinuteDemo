@@ -91,4 +91,10 @@ public class CategoryTest {
 		assertNotEquals(c1.hashCode(), c3.hashCode());
 		
 	}
+	
+	@Test
+	public void testToString() {
+		Category c1 = new Category("test");
+		assertEquals("test", c1.toString());
+	}
 }
