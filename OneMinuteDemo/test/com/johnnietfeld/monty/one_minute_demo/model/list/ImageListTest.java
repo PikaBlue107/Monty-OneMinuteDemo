@@ -24,25 +24,41 @@ public class ImageListTest {
 
 	/** List of images to be used in making ImageList test objects */
 	private static List<ClassifiedImage> images;
-
 	/** List of images all with the same category */
 	private static List<ClassifiedImage> invalidImages;
-
 	/** Folder location of test images */
 	private static final String IMAGES_LOCATION = "test-files";
-
 	/** Number of images in the test folder */
 	private static int num_images;
-
 	/** Long seed for Random to use for testing */
 	private static final long RAND_SEED = 1927367212973612983L;
+	/** Start time for running the test */
+	private static final long START_TIME = System.nanoTime();
+	/** Time of the most recently completed action */
+	private static long actionTime = START_TIME;
+	
+	private static void printTime(String message) {
+		System.out.printf("%s\nElapsed time: %d\nTotal time: %d\n", message, System.nanoTime() - actionTime,
+				System.nanoTime() - START_TIME);
+		actionTime = System.nanoTime();
+	}
+	
+	private static void printMemory() {
+		System.out.println("Total memory available: " + Runtime.getRuntime().maxMemory()/(1024 * 1024) + " megabytes.");
+		System.out.println("Free memory: " + Runtime.getRuntime().maxMemory()/(1024 * 1024) + " megabytes");
+		System.out.println("Memory consumed: " + Runtime.getRuntime().totalMemory()/(1024 * 1024) + " megabytes.");
+	}
 
 	@BeforeClass
 	public static void setupClass() {
+		
+		System.out.println("Begin setup");
 
 		// Initialize the images List
 		images = new ArrayList<ClassifiedImage>();
 		invalidImages = new ArrayList<ClassifiedImage>();
+		
+		printTime("Created List objects");
 
 		// Load the test files into the images list
 
@@ -50,10 +66,17 @@ public class ImageListTest {
 		File imageFolder = new File(IMAGES_LOCATION);
 		assertTrue(imageFolder.isDirectory());
 
+		printTime("Create folder object");
+
 		// Make two Categories
 		Category one = new Category("one");
 		Category two = new Category("two");
-
+		
+		printTime("Make Categories");
+		
+		System.out.println("Starting looping through image folder. # Images: " + imageFolder.listFiles().length);
+		printMemory();
+		
 		// Load each file in the images folder into the images list.
 		// The first image will be category one, while all subsequent images will be
 		// category two.
@@ -66,24 +89,41 @@ public class ImageListTest {
 			} catch (IOException e1) {
 				throw new IllegalArgumentException();
 			}
+			
+			printTime("Read buffered image");
+			printMemory();
 
 			// Get the name of the file
 			String name = image.getName();
 
 			// Make a new ClassifiedImage to be added
 			ClassifiedImage classImg = new ClassifiedImage(buff, images.size() == 0 ? one : two, name);
+			// Print the amount of memory consumed by this ClassifiedImage
+			System.out.println(classImg.getClass());
 			// Add classified image to images List
 			images.add(classImg);
+			
+			printTime("Created first image");
+			printMemory();
 
 			// Make a second ClassifiedImage. These will all have the same Category.
 			ClassifiedImage invalidImg = new ClassifiedImage(buff, one, name);
 			// Add this classified image to the invalid images list
 			invalidImages.add(invalidImg);
+			
+			printTime("Created second image");
+			printMemory();
 
 			// Increment the number of images loaded from the image folder
 			++num_images;
+			
+			printTime("Finished loading image: " + image.getName());
+			printMemory();
+			
 		}
 		// Image lists is now set up for testing
+		
+		printTime("Finished iterating through image folder");
 	}
 
 	@Test
