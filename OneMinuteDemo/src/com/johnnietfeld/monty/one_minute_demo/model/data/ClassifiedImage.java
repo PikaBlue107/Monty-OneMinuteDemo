@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class ClassifiedImage {
+public class ClassifiedImage { // TODO: Implement. Closable.
 
 	/** The Category this ClassifiedImage is correctly classified under */
 	private Category category;
