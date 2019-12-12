@@ -39,6 +39,9 @@ public class Game {
 	/** Default amount to adjust score by on an incorrect categorization: -1 */
 	private static final int DEFAULT_INCORRECT_DECREMENT = -1;
 
+	// TODO: Modify. Change Games from taking ImageLists to taking Lists and making
+	// new ImageLists.
+
 	/**
 	 * Creates a new Game with the provided data.
 	 * 
@@ -70,6 +73,8 @@ public class Game {
 	 * 
 	 * @param instructions the instructions to show to the user for this Game
 	 * @param list         the ImageList of all images to be used in this Game
+	 * @param require60    true if this game should require at least 60 images in
+	 *                     its ImageList, otherwise false
 	 * @throws IllegalArgumentException if the provided data are not valid
 	 */
 	public Game(String instructions, ImageList list, boolean require60) {
@@ -87,8 +92,12 @@ public class Game {
 	 * 
 	 * List must contain at least 60 images wit a valid number of categories.
 	 * 
-	 * @param instructions the instructions to show to the user for this Game
-	 * @param list         the ImageList of all images to be used in this Game
+	 * @param instructions       the instructions to show to the user for this Game
+	 * @param list               the ImageList of all images to be used in this Game
+	 * @param correctIncrement   the amount to adjust game score by upon correct
+	 *                           image categorization
+	 * @param incorrectDecrement the amount to adjust game score by upon incorrect
+	 *                           image categorization
 	 * @throws IllegalArgumentException if the provided data are not valid
 	 */
 	public Game(String instructions, ImageList list, int correctIncrement, int incorrectDecrement) {
@@ -109,8 +118,14 @@ public class Game {
 	 * 
 	 * Additionally, if require60 is true, the list must have at least 60 images.
 	 * 
-	 * @param instructions the instructions to show to the user for this Game
-	 * @param list         the ImageList of all images to be used in this Game
+	 * @param instructions       the instructions to show to the user for this Game
+	 * @param list               the ImageList of all images to be used in this Game
+	 * @param correctIncrement   the amount to adjust game score by upon correct
+	 *                           image categorization
+	 * @param incorrectDecrement the amount to adjust game score by upon incorrect
+	 *                           image categorization
+	 * @param require60          true if this game should require at least 60 images
+	 *                           in its ImageList, otherwise false
 	 * @throws IllegalArgumentException if the provided data are not valid
 	 */
 	public Game(String instructions, ImageList list, int correctIncrement, int incorrectDecrement, boolean require60) {
