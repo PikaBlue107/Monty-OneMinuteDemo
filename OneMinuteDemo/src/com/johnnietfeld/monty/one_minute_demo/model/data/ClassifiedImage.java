@@ -14,6 +14,8 @@ public class ClassifiedImage {
 	private File image_location;
 	/** The name of this ClassifiedImage */
 	private String name;
+	/** The image of this ClassifiedImage, loaded into memory */
+	private BufferedImage loadedImage;
 
 	/**
 	 * Makes a new ClassifiedImage with the provided Image and Category. Ensures
@@ -89,16 +91,16 @@ public class ClassifiedImage {
 	}
 
 	/**
-	 * Loads the image associated with this ClassifiedImage into memory, and returns
-	 * it.
+	 * Loads the image associated with this ClassifiedImage into memory, and saves
+	 * it to this ClassifiedImage.
 	 * 
-	 * @return a BufferedImage for the image file that this ClassifiedImage refers to.
 	 * @throws IllegalArgumentException if the image at the location saved by this
 	 *                                  ClassifiedImage cannot be loaded.
 	 */
-	public BufferedImage loadImage() {
+	public void loadImage() { // TODO: Extend, make a ClassifiedImage store and flush the BufferedImage
+								// created by this method
 		try {
-			return ImageIO.read(image_location);
+			loadedImage = ImageIO.read(image_location);
 		} catch (IOException e) {
 			throw new IllegalArgumentException(
 					"Image located at " + image_location.getAbsolutePath() + " could not be loaded.");
@@ -129,5 +131,28 @@ public class ClassifiedImage {
 	@Override
 	public String toString() {
 		return name + ": " + category.toString();
+	}
+
+	/**
+	 * Retrieves this ClassifiedImage's loaded BufferedImage in memory. If that
+	 * image does not exist, make it first.
+	 * 
+	 * @return a BufferedImage described by this ClassifiedImage
+	 * @throws IllegalArgumentException if the image at the location saved by this
+	 *                                  ClassifiedImage cannot be loaded.
+	 */
+	public BufferedImage getLoadedImage() {
+		if (loadedImage == null) {
+			loadImage();
+		}
+		return loadedImage;
+	}
+
+	/**
+	 * Clears the internal loaded image from memory, making the BufferedImage
+	 * available for garbage collection.
+	 */
+	public void flushLoadedImage() {
+		loadedImage = null;
 	}
 }

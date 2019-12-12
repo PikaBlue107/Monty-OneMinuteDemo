@@ -31,7 +31,7 @@ public class ClassifiedImageTest {
 	@Test
 	public void test() {
 		ClassifiedImage test = null;
-		
+
 		// Create BufferedImage for testing
 		BufferedImage image = null;
 		try {
@@ -41,7 +41,6 @@ public class ClassifiedImageTest {
 			e1.printStackTrace();
 		}
 
-		
 		// Assert invalid make new image with null image argument
 		try {
 			test = new ClassifiedImage(null, CATEGORY, NAME);
@@ -49,7 +48,7 @@ public class ClassifiedImageTest {
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
 		}
-		
+
 		// Assert invalid make new image with null category argument
 		try {
 			test = new ClassifiedImage(IMAGE_FILE, null, NAME);
@@ -57,7 +56,7 @@ public class ClassifiedImageTest {
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
 		}
-		
+
 		// Assert invalid make new image with null name argument
 		try {
 			test = new ClassifiedImage(IMAGE_FILE, CATEGORY, null);
@@ -65,7 +64,7 @@ public class ClassifiedImageTest {
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
 		}
-		
+
 		// Assert invalid make new image with blank name argument
 		try {
 			test = new ClassifiedImage(IMAGE_FILE, CATEGORY, "   ");
@@ -73,24 +72,33 @@ public class ClassifiedImageTest {
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
 		}
-		
+
 		// Assert valid make new image with valid data
 		try {
 			test = new ClassifiedImage(IMAGE_FILE, CATEGORY, NAME);
 			assertEquals(IMAGE_FILE, test.getImageLocation());
 			assertEquals(CATEGORY, test.getCategory());
 			assertEquals(NAME, test.getName());
+
 			// Test that loadImage is working seemingly correctly
-			BufferedImage testImage = test.loadImage();
+			BufferedImage testImage = test.getLoadedImage();
 			assertTrue(testImage instanceof BufferedImage);
 			assertEquals(500, testImage.getWidth());
 			assertEquals(500, testImage.getHeight());
+
+			// Test that clearing an image is working properly
+			test.flushLoadedImage();
+			// Retrieve new BufferedImage, assert that they are not equal references
+			BufferedImage newLoadedImage = test.getLoadedImage();
+			// Assert that both BufferedImages are different references and not the same
+			// object
+			assertFalse(testImage == newLoadedImage);
 		} catch (IllegalArgumentException e) {
 			fail();
 		}
-		
+
 		// Test scoring on an Image
-		
+
 		// Assert correct scoring on identical Category
 		assertTrue(test.scoreCategory(CATEGORY));
 		// Assert correct scoring on same category, different instance with same name
@@ -98,7 +106,7 @@ public class ClassifiedImageTest {
 		// Assert incorrect scoring on different category
 		assertFalse(test.scoreCategory(new Category("DIFFERENT")));
 	}
-	
+
 	@Test
 	public void testToString() {
 		ClassifiedImage test = new ClassifiedImage(IMAGE_FILE, CATEGORY, NAME);
