@@ -124,6 +124,9 @@ public class Game {
 	 * @param instructions the instructions to set
 	 */
 	private void setInstructions(String instructions) {
+		if (instructions == null || instructions.isBlank()) {
+			throw new IllegalArgumentException("Instructions must be a non-null, non-blank string");
+		}
 		this.instructions = instructions;
 	}
 
@@ -149,6 +152,69 @@ public class Game {
 		}
 		this.list = list;
 	}
+
+	/**
+	 * Wrapper of ImageList's cycle setter. Sets whether a Game will cycle images.
+	 * 
+	 * @param assignment true for each image may be reused after the first time
+	 *                   through the list, false for each image is only used once
+	 */
+	public void setCycle(boolean assignment) {
+		list.setCycle(assignment);
+	}
+
+	/**
+	 * Wrapper of ImageList's randomization setter. Sets whether a cycling game will
+	 * randomize the image order between cycled.
+	 * 
+	 * @param assignment true for randomized image order each cycle, false for same
+	 *                   image order each cycle.
+	 */
+	public void setRandomizeCycle(boolean assignment) {
+		list.setRandomizeCycle(assignment);
+	}
+
+	/**
+	 * Returns whether this Game cycles images after each one has been presented.
+	 * 
+	 * @return true for cycling of images after complete runthrough of all images
+	 *         presented, false for each image will only be shown once and any
+	 *         future next image requests will throw exception.
+	 */
+	public boolean doesCycle() {
+		return list.doesCycle();
+	}
+
+	/**
+	 * Returns whether this Game randomizes image order for each cycle.
+	 * 
+	 * @return true for each cycle of images will have a different order, false for
+	 *         each cycle of images will have the same order.
+	 */
+	public boolean doesRandomize() {
+		return list.doesRandomize();
+	}
+
+	/**
+	 * Gets how many images total are present in this Game.
+	 * 
+	 * @return the number of images in this Game's ImageList.
+	 */
+	public int available() {
+		return list.size();
+	}
+
+	/**
+	 * Gets how many images have not yet been shown in this Game.
+	 * 
+	 * @return the number of images that have not yet been retreieved from this
+	 *         Game's ImageList.
+	 */
+	public int remaining() {
+		return list.remaining();
+	}
+
+	// TODO: Decide, does Game need to present the functionality of list.iterator()?
 
 	/**
 	 * Scans this Game's ImageList for all Categories expressed by ClassifiedImages,
@@ -205,12 +271,30 @@ public class Game {
 	}
 
 	/**
-	 * Retrieves the next image to be shown to the user.
+	 * Determines whether this Game has a next image that can be shown. This is true
+	 * when either the internal ImageList has at least one element remaining, or the
+	 * ImageList allows cycling.
 	 * 
-	 * @return a ClassifiedImage from the sequence of images
+	 * @return whether this Game has a next image.
+	 */
+	public boolean hasNext() {
+		return list.remaining() > 0 || list.doesCycle();
+	}
+
+	/**
+	 * Retrieves the next image to be shown to the user, and loads its BufferedImage
+	 * into memory.
+	 * 
+	 * @return a ClassifiedImage from the sequence of images with a loaded image
+	 * @throws IllegalStateException    if this Game is out of images and not set to
+	 *                                  recycle images
+	 * @throws IllegalArgumentException if the next image could not be loaded into
+	 *                                  memory for some reason
 	 */
 	public ClassifiedImage nextImage() {
-		return list.next();
+		ClassifiedImage next = list.next();
+		next.loadImage();
+		return next;
 	}
 
 	/**
@@ -221,6 +305,10 @@ public class Game {
 	 * @param image     the image that the user has just categorized
 	 * @param placement the Category that the user categorized the image as
 	 * @return the next image in the sequence, a ClassifiedImage
+	 * @throws IllegalStateException    if this Game is out of images and not set to
+	 *                                  recycle images
+	 * @throws IllegalArgumentException if the next image could not be loaded into
+	 *                                  memory for some reason
 	 */
 	public ClassifiedImage nextStep(ClassifiedImage image, Category placement) {
 		scoreImage(image, placement);
