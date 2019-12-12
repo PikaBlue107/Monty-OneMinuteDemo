@@ -155,4 +155,39 @@ public class ClassifiedImage { // TODO: Implement. Closable.
 	public void flushLoadedImage() {
 		loadedImage = null;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + category.hashCode();
+		result = prime * result + image_location.hashCode();
+		result = prime * result + name.hashCode();
+		return result;
+	}
+
+	/**
+	 * Compares two ClassifiedImages on category, image location, and name.
+	 * 
+	 * @return true if the ClassifiedImages share each of those three fields,
+	 *         otherwise false.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ClassifiedImage other = (ClassifiedImage) obj;
+		if (!category.equals(other.category))
+			return false;
+		if (!image_location.equals(other.image_location))
+			return false;
+		if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+
 }
