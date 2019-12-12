@@ -240,7 +240,7 @@ public class GameTest {
 			// Assert that the difference in time is under a second
 			// Retrieve the current time
 			endTime = System.currentTimeMillis();
-			// Calculate the amount of miliseconds it took to load this image
+			// Calculate the amount of milliseconds it took to load this image
 			elapsed = endTime - startTime;
 			// Assert that the elapsed time is under a second
 			assertTrue("Image took longer than one second to load.\nName: " + loaded.getName() + "\nElapsed time: " + elapsed / 1000 + "." + elapsed % 1000 + " seconds.", elapsed < 1000);
