@@ -19,9 +19,9 @@ public class Game {
 	/** The user's current score */
 	private int score;
 	/** Amount to increase the score by upon a correct image classification */
-	private final int correctIncrement = 1;
+	private int correctIncrement = 1;
 	/** Amount to decrease the score by upon an incorrect image classification */
-	private final int incorrectDecrement = -1;
+	private int incorrectDecrement = -1;
 	/**
 	 * Used to toggle requirements that an ImageList have at least 60 images for a
 	 * valid Game to be run from it.
@@ -30,14 +30,22 @@ public class Game {
 
 	// Constants
 
-	/** Minimum number of categories allowed for a valid Game */
+	/** Minimum number of categories allowed for a valid Game: 2 */
 	private static final int MIN_CATEGORIES = 2;
-	/** Maximum number of categories allowed for a valid Game */
+	/** Maximum number of categories allowed for a valid Game: 4 */
 	private static final int MAX_CATEGORIES = 4;
+	/** Default amount to adjust score by on a correct categorization: +1 */
+	private static final int DEFAULT_CORRECT_INCREMENT = 1;
+	/** Default amount to adjust score by on an incorrect categorization: -1 */
+	private static final int DEFAULT_INCORRECT_DECREMENT = -1;
 
 	/**
-	 * Creates a new Game with the provided data. Categories will be extracted from
-	 * the ImageList provided. Instructions must be a non-null, non-blank string.
+	 * Creates a new Game with the provided data.
+	 * 
+	 * Categories will be extracted from the ImageList provided.
+	 * 
+	 * Instructions must be a non-null, non-blank string.
+	 * 
 	 * List must contain at least 60 images wit a valid number of categories.
 	 * 
 	 * @param instructions the instructions to show to the user for this Game
@@ -45,29 +53,86 @@ public class Game {
 	 * @throws IllegalArgumentException if the provided data are not valid
 	 */
 	public Game(String instructions, ImageList list) {
-		this(instructions, list, true);
+		this(instructions, list, DEFAULT_CORRECT_INCREMENT, DEFAULT_INCORRECT_DECREMENT, true);
 	}
 
 	/**
 	 * Creates a new Game with the provided data, declaring whether or not at least
-	 * 60 images will be required. Categories will be extracted from the ImageList
-	 * provided.
+	 * 60 images will be required.
+	 * 
+	 * Categories will be extracted from the ImageList provided.
 	 * 
 	 * Instructions must be a non-null, non-blank string.
 	 * 
-	 * List must contain images wit a valid number of categories. Additionally, if
-	 * require60 is true, the list must have at least 60 images.
+	 * List must contain images wit a valid number of categories.
+	 * 
+	 * Additionally, if require60 is true, the list must have at least 60 images.
 	 * 
 	 * @param instructions the instructions to show to the user for this Game
 	 * @param list         the ImageList of all images to be used in this Game
 	 * @throws IllegalArgumentException if the provided data are not valid
 	 */
 	public Game(String instructions, ImageList list, boolean require60) {
+		this(instructions, list, DEFAULT_CORRECT_INCREMENT, DEFAULT_INCORRECT_DECREMENT, require60);
+	}
+
+	/**
+	 * Creates a new Game with the provided data.
+	 * 
+	 * Correct and Incorrect score adjustments passed will be saved.
+	 * 
+	 * Categories will be extracted from the ImageList provided.
+	 * 
+	 * Instructions must be a non-null, non-blank string.
+	 * 
+	 * List must contain at least 60 images wit a valid number of categories.
+	 * 
+	 * @param instructions the instructions to show to the user for this Game
+	 * @param list         the ImageList of all images to be used in this Game
+	 * @throws IllegalArgumentException if the provided data are not valid
+	 */
+	public Game(String instructions, ImageList list, int correctIncrement, int incorrectDecrement) {
+		this(instructions, list, correctIncrement, incorrectDecrement, true);
+	}
+
+	/**
+	 * Creates a new Game with the provided data, declaring whether or not at least
+	 * 60 images will be required.
+	 * 
+	 * Correct and Incorrect score adjustments passed will be saved.
+	 * 
+	 * Categories will be extracted from the ImageList provided.
+	 * 
+	 * Instructions must be a non-null, non-blank string.
+	 * 
+	 * List must contain images wit a valid number of categories.
+	 * 
+	 * Additionally, if require60 is true, the list must have at least 60 images.
+	 * 
+	 * @param instructions the instructions to show to the user for this Game
+	 * @param list         the ImageList of all images to be used in this Game
+	 * @throws IllegalArgumentException if the provided data are not valid
+	 */
+	public Game(String instructions, ImageList list, int correctIncrement, int incorrectDecrement, boolean require60) {
 		setRequire60(require60);
 		setInstructions(instructions);
 		setList(list);
 		setCategories();
+		setIncrements(correctIncrement, incorrectDecrement);
 		score = 0;
+	}
+
+	/**
+	 * Sets the desired score adjustments for correctly and incorrectly categorized
+	 * images.
+	 * 
+	 * @param up   The amount to adjust score by upon a successful categorization.
+	 * @param down The amount to adjust score by upon an unsuccessful
+	 *             categorization.
+	 */
+	private void setIncrements(int up, int down) {
+		this.correctIncrement = up;
+		this.incorrectDecrement = down;
 	}
 
 	/**
