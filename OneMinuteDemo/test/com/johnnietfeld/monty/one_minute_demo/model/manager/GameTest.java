@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 
@@ -32,12 +33,24 @@ public class GameTest {
 	private static final ArrayList<ClassifiedImage> INVALID_LIST_FEW_CATEGORIES = new ArrayList<ClassifiedImage>();
 	/** Invalid source list of images, too many categories */
 	private static final ArrayList<ClassifiedImage> INVALID_LIST_MANY_CATEGORIES = new ArrayList<ClassifiedImage>();
-	/** Invalid source list of images, too short */
+	/** Invalid source list of images, too short. 10 elements */
 	private static final ArrayList<ClassifiedImage> INVALID_LIST_TOO_SHORT = new ArrayList<ClassifiedImage>();
+	/** Amount of elements that will be in the INVALID_LIST_TOO_SHORT List. */
+	private static final int SHORT_LIST_LENGTH = 10;
 	/** Folder location containing at least 60 test images */
 	private static final String IMAGES_LOCATION = "test-files";
 	/** String instructions paired with the Game for testing */
 	private static final String INSTRUCTIONS = "Do the thing";
+	/**
+	 * Default correct increment for testing correct image categorization and score
+	 * adjustment
+	 */
+	private static final int CORRECT_INCREMENT = 1;
+	/**
+	 * Default incorrect decrement for testing incorrect image categorization and
+	 * score adjustment
+	 */
+	private static final int INCORRECT_DECREMENT = -2;
 	/** Game object used for testing */
 	private Game test;
 
@@ -70,8 +83,9 @@ public class GameTest {
 					image_file.getName());
 			// Add image to the SOURCE_IMAGE_LIST
 			SOURCE_IMAGE_LIST.add(image);
-			// If invalid list (too short) is below 10 elements, add to that list as well
-			if (INVALID_LIST_TOO_SHORT.size() < 10) {
+			// If invalid list (too short) is below preset number of elements, add to that
+			// list as well
+			if (INVALID_LIST_TOO_SHORT.size() < SHORT_LIST_LENGTH) {
 				INVALID_LIST_TOO_SHORT.add(image);
 			}
 
@@ -89,10 +103,32 @@ public class GameTest {
 
 	}
 
+	/**
+	 * Creates a fresh game with default arguments before each test
+	 * 
+	 * @throws Exception
+	 */
 	@Before
 	public void setUp() throws Exception {
-		ImageList list = new ImageList(SOURCE_IMAGE_LIST);
-		test = new Game(INSTRUCTIONS, list);
+		makeGame(SOURCE_IMAGE_LIST, 1, -1, true);
+	}
+
+	/**
+	 * Helper function to encapsulate the two lines for making an ImageList and
+	 * adding that to a new Game
+	 * 
+	 * @param source             ImageList that this Game will use
+	 * @param correctIncrement   amount to adjust game score by upon correct image
+	 *                           categorization
+	 * @param incorrectDecrement amount to adjust game score by upon incorrect image
+	 *                           categorization
+	 * @param require60          true if this game should require at least 60 images
+	 *                           in its ImageList, otherwise false
+	 */
+	private void makeGame(ArrayList<ClassifiedImage> source, int correctIncrement, int incorrectDecrement,
+			boolean require60) {
+		ImageList list = new ImageList(source);
+		test = new Game(INSTRUCTIONS, list, correctIncrement, incorrectDecrement, require60);
 	}
 
 	@Test
@@ -151,6 +187,8 @@ public class GameTest {
 			assertEquals(INSTRUCTIONS, test.getInstructions());
 			assertFalse(test.getRequire60());
 			assertEquals(0, test.getScore());
+			assertEquals(SOURCE_IMAGE_LIST.size(), test.available());
+			assertEquals(SOURCE_IMAGE_LIST.size(), test.remaining());
 		} catch (IllegalArgumentException e) {
 			fail();
 		}
@@ -162,6 +200,8 @@ public class GameTest {
 			assertEquals(INSTRUCTIONS, test.getInstructions());
 			assertFalse(test.getRequire60());
 			assertEquals(0, test.getScore());
+			assertEquals(SHORT_LIST_LENGTH, test.available());
+			assertEquals(SHORT_LIST_LENGTH, test.remaining());
 		} catch (IllegalArgumentException e) {
 			fail();
 		}
@@ -190,9 +230,25 @@ public class GameTest {
 	@Test
 	public void testNextImage() {
 
+		/*
+		 * This method takes a long amount of time to run. It should not be run with
+		 * each test suite. If this test needs to be run, the following field should be
+		 * set to 'true'.
+		 */
+		boolean runTest = true;
+		if (!runTest)
+			return;
+
+		// Assert beginning available and remaining images
+		assertEquals(SOURCE_IMAGE_LIST.size(), test.available());
+		assertEquals(SOURCE_IMAGE_LIST.size(), test.remaining());
+		
 		// Rigorously test the first image
 		// Retrieve the first image of the Game
 		ClassifiedImage actualObject = test.nextImage();
+		// Assert that remaining has gone down by one, available same as always
+		assertEquals(SOURCE_IMAGE_LIST.size() - 1, test.remaining());
+		assertEquals(SOURCE_IMAGE_LIST.size(), test.available());
 		// Test varying conditions from the ClassifiedImage and its constructed
 		// BufferedImage
 		// Make our own BufferedImage for comparison
@@ -214,6 +270,7 @@ public class GameTest {
 			// Retrieve the RGB arrays for expected and actual
 			int[] expectedRGB = expected.getRGB(0, 0, w, h, null, 0, w);
 			int[] actualRGB = actual.getRGB(0, 0, w, h, null, 0, w);
+			// Assert they are equal
 			assertArrayEquals(expectedRGB, actualRGB);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -226,25 +283,29 @@ public class GameTest {
 		long elapsed = 0;
 		// Create variable to hold loaded image
 		ClassifiedImage loaded = null;
+		// Create variable to hold number of seen images
+		int seenImages = 1;
 		// Ensure Game list is not set to cycle
 		test.setCycle(false);
 		System.out.println("Beginning testing of elapsed time of loading all images in test folder.");
-		
+
 		// Loop through all images in the Game
 		while (test.hasNext()) {
 			// Register the time before each image is loaded
 			startTime = System.currentTimeMillis();
 			// Load the next image in the Game
 			loaded = test.nextImage();
-			assertNotNull(loaded);
+			// Assert that remaining number of images has gone down by one
+			assertEquals(SOURCE_IMAGE_LIST.size() - ++seenImages, test.remaining());
 			// Assert that the difference in time is under a second
 			// Retrieve the current time
 			endTime = System.currentTimeMillis();
 			// Calculate the amount of milliseconds it took to load this image
 			elapsed = endTime - startTime;
 			// Assert that the elapsed time is under a second
-			assertTrue("Image took longer than one second to load.\nName: " + loaded.getName() + "\nElapsed time: " + elapsed / 1000 + "." + elapsed % 1000 + " seconds.", elapsed < 1000);
-			System.out.println("Finished loading image " + loaded.getName());
+			assertTrue("Image took longer than one second to load.\nName: " + loaded.getName() + "\nElapsed time: "
+					+ elapsed / 1000 + "." + elapsed % 1000 + " seconds.", elapsed < 1000);
+			System.out.println("Finished loading image " + seenImages + ": " + loaded.getName());
 			System.out.printf("Elapsed time: %d.%d seconds.\n", elapsed / 1000, elapsed % 1000);
 			// Flush loaded image for memory's sake
 			loaded.flushLoadedImage();
@@ -259,7 +320,25 @@ public class GameTest {
 	 */
 	@Test
 	public void testScoreImage() {
-		fail("Not yet implemented");
+
+		// Make game with planned score modifiers
+		makeGame(SOURCE_IMAGE_LIST, CORRECT_INCREMENT, INCORRECT_DECREMENT, true);
+		// Assert that score starts at 0
+		assertEquals(0, test.getScore());
+
+		// Test that correct categorization has the correct effect
+		// Retrieve the first image
+		ClassifiedImage first = test.nextImage();
+		// Score it correctly
+		assertEquals(CORRECT_INCREMENT, test.scoreImage(first, first.getCategory()));
+		assertEquals(CORRECT_INCREMENT, test.getScore());
+
+		// Test that incorrect categorization has the desired effect
+		// Retrieve the second image
+		ClassifiedImage second = test.nextImage();
+		// Score it correctly and assert score has changed as a result
+		assertEquals(CORRECT_INCREMENT + INCORRECT_DECREMENT, test.scoreImage(second, new Category("Different")));
+		assertEquals(CORRECT_INCREMENT + INCORRECT_DECREMENT, test.getScore());
 	}
 
 	/**
@@ -268,7 +347,120 @@ public class GameTest {
 	 */
 	@Test
 	public void testNextStep() {
-		fail("Not yet implemented");
+
+		/*
+		 * This method takes a long amount of time to run. It should not be run with
+		 * each test suite. If this test needs to be run, the following field should be
+		 * set to 'true'.
+		 */
+		boolean runTest = true;
+		if (!runTest)
+			return;
+
+		System.out.println("Testing nextStep() on all images in test folder");
+
+		// Make game with planned score modifiers
+		makeGame(SOURCE_IMAGE_LIST, CORRECT_INCREMENT, INCORRECT_DECREMENT, true);
+		// Assert that score start at 0
+		assertEquals(0, test.getScore());
+
+		// Make Random object for random guessing
+		Random random = new Random();
+		// Make score counter for keeping track of expected score
+		int expectedScore = 0;
+		// Make incorrect Category for all incorrect guesses
+		Category badCat = new Category("Different");
+
+		// Retrieve first image
+		ClassifiedImage next = test.nextImage();
+		// Create references for looping
+		boolean guessCorrect;
+		Category guess;
+
+		// While the test Game has more images
+		while (test.hasNext()) {
+			// Randomly determine by 50% chance whether this guess will be correct or not.
+			guessCorrect = random.nextBoolean();
+			// Adjust expected score by whether our guess will be correct or not
+			expectedScore += guessCorrect ? CORRECT_INCREMENT : INCORRECT_DECREMENT;
+			// Save the correct or incorrect Category guess
+			guess = guessCorrect ? next.getCategory() : badCat;
+			// Print current test status to console
+			System.out.printf("Testing image %s.\nGuess: %s\nExpected score: %d\n", next.getName(), guess.getName(),
+					expectedScore);
+			// Score the image and retrieve the next
+			next = test.nextStep(next, guess);
+			System.out.println("Actual score: " + test.getScore());
+			// Assert that score has changed expectedly
+			assertEquals(expectedScore, test.getScore());
+		}
+
+		// Last image is not scored but that's fine
+	}
+
+	@Test
+	public void testCycling() {
+		// Make new game from short list of images
+		makeGame(INVALID_LIST_TOO_SHORT, CORRECT_INCREMENT, INCORRECT_DECREMENT, false);
+		// Set cycling false, randomizing true
+		test.setCycle(false);
+		assertFalse(test.doesCycle());
+		test.setRandomizeCycle(false);
+		assertFalse(test.doesRandomize());
+
+		ArrayList<ClassifiedImage> order = new ArrayList<ClassifiedImage>();
+
+		for (int i = 0; i < SHORT_LIST_LENGTH; ++i) {
+			// Append the next image to the end of the order arrayList
+			order.add(test.nextImage());
+			// We don't need the loaded images for this test
+			order.get(i).flushLoadedImage();
+		}
+
+		// Assert that the Game does not offer more images
+		assertFalse(test.hasNext());
+
+		// Set cycling true, assert changed
+		test.setCycle(true);
+		assertTrue(test.doesCycle());
+
+		// Assert that the Game now does offer more images
+		assertTrue(test.hasNext());
+
+		// Assert that the order of images is the same without randomization
+		for (int i = 0; i < SHORT_LIST_LENGTH; ++i) {
+			assertTrue(order.get(i) == test.nextImage());
+			order.get(i).flushLoadedImage();
+		}
+
+		// Set randomization true, assert changed
+		test.setRandomizeCycle(true);
+		assertTrue(test.doesRandomize());
+
+		// Assert that the order has changed
+		boolean orderChanged = false;
+		for (int i = 0; i < SHORT_LIST_LENGTH; ++i) {
+			// Retrieve next image from Game
+			ClassifiedImage nextImage = test.nextImage();
+			// Clear memory
+			order.get(i).flushLoadedImage();
+			// If this image is different than the image in this spot previously
+			if (order.get(i) != nextImage) {
+				// Save that the order has changed and escape from the loop
+				orderChanged = true;
+				break;
+			}
+		}
+
+		// Assert that we did find an image that was in the different place as before.
+		assertTrue(orderChanged);
+		/*
+		 * The only situation where this will be correctly false is if the randomization
+		 * yields the exact same order as before, a probability of one over
+		 * SHORT_LIST_LENGTH factorial.
+		 * 
+		 * With the current default of 10, that's one in 3,628,800.
+		 */
 	}
 
 }
