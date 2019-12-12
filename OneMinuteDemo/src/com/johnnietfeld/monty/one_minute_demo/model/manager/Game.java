@@ -22,6 +22,8 @@ public class Game {
 	private int correctIncrement = 1;
 	/** Amount to decrease the score by upon an incorrect image classification */
 	private int incorrectDecrement = -1;
+	/** Amount of time available for this game, in seconds */
+	private int time;
 	/**
 	 * Used to toggle requirements that an ImageList have at least 60 images for a
 	 * valid Game to be run from it.
@@ -138,6 +140,45 @@ public class Game {
 	}
 
 	/**
+	 * Creates a new Game with the provided data, declaring whether or not at least
+	 * 60 images will be required.
+	 * 
+	 * Correct and Incorrect score adjustments passed will be saved.
+	 * 
+	 * Categories will be extracted from the ImageList provided.
+	 * 
+	 * Instructions must be a non-null, non-blank string.
+	 * 
+	 * List must contain images wit a valid number of categories.
+	 * 
+	 * Additionally, if require60 is true, the list must have at least 60 images.
+	 * 
+	 * Time must be at least 1.
+	 * 
+	 * @param instructions       the instructions to show to the user for this Game
+	 * @param list               the ImageList of all images to be used in this Game
+	 * @param correctIncrement   the amount to adjust game score by upon correct
+	 *                           image categorization
+	 * @param incorrectDecrement the amount to adjust game score by upon incorrect
+	 *                           image categorization
+	 * @param require60          true if this game should require at least 60 images
+	 *                           in its ImageList, otherwise false
+	 * @param time               the amount of time in seconds that this game should
+	 *                           be played for
+	 * @throws IllegalArgumentException if the provided data are not valid
+	 */
+	public Game(String instructions, ImageList list, int correctIncrement, int incorrectDecrement, boolean require60,
+			int time) {
+		setRequire60(require60);
+		setInstructions(instructions);
+		setList(list);
+		setCategories();
+		setIncrements(correctIncrement, incorrectDecrement);
+		setTime(time);
+		score = 0;
+	}
+
+	/**
 	 * Sets the desired score adjustments for correctly and incorrectly categorized
 	 * images.
 	 * 
@@ -148,6 +189,27 @@ public class Game {
 	private void setIncrements(int up, int down) {
 		this.correctIncrement = up;
 		this.incorrectDecrement = down;
+	}
+
+	/**
+	 * Private setter for ensuring game time data integrity.
+	 * 
+	 * @param time the amount of time in seconds that this game should be playable
+	 * @throws IllegalArgumentException if time <= 0
+	 */
+	private void setTime(int time) {
+		if (time <= 0) {
+			throw new IllegalArgumentException("Game time cannot be less than 1 second.");
+		}
+	}
+
+	/**
+	 * Returns the amount of time in seconds that this game should be played for.
+	 * 
+	 * @return this game's time field
+	 */
+	public int getTime() {
+		return time;
 	}
 
 	/**
