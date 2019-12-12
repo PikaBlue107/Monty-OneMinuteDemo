@@ -380,7 +380,7 @@ public class Game {
 	/**
 	 * Scores the image provided and retrieves the next image to be shown.
 	 * 
-	 * Combines usage of scoreImage() and nextImage()
+	 * Combines usage of scoreImage() and nextImage(), and unloads the recently-scored image from memory.
 	 * 
 	 * @param image     the image that the user has just categorized
 	 * @param placement the Category that the user categorized the image as
@@ -392,6 +392,7 @@ public class Game {
 	 */
 	public ClassifiedImage nextStep(ClassifiedImage image, Category placement) {
 		scoreImage(image, placement);
+		image.flushLoadedImage();
 		return nextImage();
 	}
 }
