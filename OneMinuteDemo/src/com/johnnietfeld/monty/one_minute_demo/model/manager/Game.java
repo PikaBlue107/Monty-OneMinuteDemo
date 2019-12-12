@@ -202,6 +202,8 @@ public class Game {
 	 * Sets the instructions for this Game to be displayed to the user.
 	 * 
 	 * @param instructions the instructions to set
+	 * @throws IllegalArgumentException if the provided instructions are null or
+	 *                                  blank
 	 */
 	private void setInstructions(String instructions) {
 		if (instructions == null || instructions.isBlank()) {
@@ -380,7 +382,8 @@ public class Game {
 	/**
 	 * Scores the image provided and retrieves the next image to be shown.
 	 * 
-	 * Combines usage of scoreImage() and nextImage(), and unloads the recently-scored image from memory.
+	 * Combines usage of scoreImage() and nextImage(), and unloads the
+	 * recently-scored image from memory.
 	 * 
 	 * @param image     the image that the user has just categorized
 	 * @param placement the Category that the user categorized the image as
