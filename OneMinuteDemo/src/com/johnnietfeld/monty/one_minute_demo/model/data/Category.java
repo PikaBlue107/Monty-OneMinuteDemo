@@ -51,6 +51,11 @@ public class Category {
 		return result;
 	}
 
+	/**
+	 * Compares two categories by String name only.
+	 * 
+	 * @return true if the two categories have the same name String, otherwise false
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -64,10 +69,15 @@ public class Category {
 			return false;
 		return true;
 	}
-	
+
+	/**
+	 * Returns this Category's name
+	 * 
+	 * @return this Category's name
+	 */
 	@Override
 	public String toString() {
-		return name;
+		return getName();
 	}
 
 }
