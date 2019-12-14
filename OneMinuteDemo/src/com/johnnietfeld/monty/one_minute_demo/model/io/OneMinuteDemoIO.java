@@ -92,68 +92,6 @@ public class OneMinuteDemoIO {
 	}
 
 	/**
-	 * Private helper function to load all images from the game folder
-	 * 
-	 * @param gameFolder the game folder containing category folders, each of which
-	 *                   contain images
-	 * @return an ImageList of all images found in the GameFolder
-	 */
-	private static ImageList readImages(File gameFolder) {
-		// Get a list of directories for all Categories in the game folder
-		File[] categoryFolders = gameFolder.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return !pathname.isFile();
-			}
-		});
-		// Create a master ArrayList to hold all images in all categories
-		ArrayList<ClassifiedImage> allImages = new ArrayList<ClassifiedImage>();
-
-		// Iterate through the array of category folders
-		for (File categoryFolder : categoryFolders) {
-			// Load all images from one category folder into the master ArrayList
-			readImagesInCategory(categoryFolder, allImages);
-		}
-		// All images have been correctly labeled with their Category and loaded into
-		// the master ArrayList
-
-		// If the master image list has no images, throw an exception
-		if (allImages.size() == 0) {
-			throw new IllegalArgumentException("Game folder at " + gameFolder.getAbsolutePath()
-					+ "\nNo images within category folders. Place at folder with at least one image in the game folder");
-		}
-
-		// Make an ImageList object from the ArrayList and return it
-		return new ImageList(allImages);
-	}
-
-	/**
-	 * Private helper method to read all images in a Category folder
-	 * 
-	 * @param categoryFolder folder of images, titled with the category name
-	 * @param images         ArrayList for loaded images to be added to
-	 */
-	private static void readImagesInCategory(File categoryFolder, ArrayList<ClassifiedImage> images) {
-		// Make Category to apply to all images
-		Category category = new Category(categoryFolder.getName());
-		// Get the array of all Files in the directory
-		File[] imageFiles = categoryFolder.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.isFile();
-			}
-		});
-
-		// Iterate through all files in the folder
-		for (File imageFile : imageFiles) {
-			// Create a new ClassifiedImage object
-			ClassifiedImage image = new ClassifiedImage(imageFile, category, imageFile.getName());
-			// Add image to the list of images
-			images.add(image);
-		}
-	}
-
-	/**
 	 * Splits the provided string into two components by the first "=" character in
 	 * the string.
 	 * 
@@ -416,6 +354,68 @@ public class OneMinuteDemoIO {
 		 */
 		void setRequire60(boolean require60) {
 			this.require60 = require60;
+		}
+	}
+
+	/**
+	 * Private helper function to load all images from the game folder
+	 * 
+	 * @param gameFolder the game folder containing category folders, each of which
+	 *                   contain images
+	 * @return an ImageList of all images found in the GameFolder
+	 */
+	private static ImageList readImages(File gameFolder) {
+		// Get a list of directories for all Categories in the game folder
+		File[] categoryFolders = gameFolder.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File pathname) {
+				return !pathname.isFile();
+			}
+		});
+		// Create a master ArrayList to hold all images in all categories
+		ArrayList<ClassifiedImage> allImages = new ArrayList<ClassifiedImage>();
+
+		// Iterate through the array of category folders
+		for (File categoryFolder : categoryFolders) {
+			// Load all images from one category folder into the master ArrayList
+			readImagesInCategory(categoryFolder, allImages);
+		}
+		// All images have been correctly labeled with their Category and loaded into
+		// the master ArrayList
+
+		// If the master image list has no images, throw an exception
+		if (allImages.size() == 0) {
+			throw new IllegalArgumentException("Game folder at " + gameFolder.getAbsolutePath()
+					+ "\nNo images within category folders. Place at folder with at least one image in the game folder");
+		}
+
+		// Make an ImageList object from the ArrayList and return it
+		return new ImageList(allImages);
+	}
+
+	/**
+	 * Private helper method to read all images in a Category folder
+	 * 
+	 * @param categoryFolder folder of images, titled with the category name
+	 * @param images         ArrayList for loaded images to be added to
+	 */
+	private static void readImagesInCategory(File categoryFolder, ArrayList<ClassifiedImage> images) {
+		// Make Category to apply to all images
+		Category category = new Category(categoryFolder.getName());
+		// Get the array of all Files in the directory
+		File[] imageFiles = categoryFolder.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.isFile();
+			}
+		});
+
+		// Iterate through all files in the folder
+		for (File imageFile : imageFiles) {
+			// Create a new ClassifiedImage object
+			ClassifiedImage image = new ClassifiedImage(imageFile, category, imageFile.getName());
+			// Add image to the list of images
+			images.add(image);
 		}
 	}
 
