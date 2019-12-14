@@ -4,9 +4,13 @@
 package com.johnnietfeld.monty.one_minute_demo.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+
+import com.johnnietfeld.monty.one_minute_demo.model.io.OneMinuteDemoIO;
+import com.johnnietfeld.monty.one_minute_demo.model.manager.Game;
 
 /**
  * @author Melody Griesen
@@ -18,6 +22,8 @@ public class OneMinuteDemoGUI extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 8133686128543162596L;
+	
+	private static final String GAME_FOLDER = "games";
 
 	/**
 	 * Initializes the program by making a 
@@ -26,12 +32,16 @@ public class OneMinuteDemoGUI extends JPanel {
 	 */
 	public static void main(String[] args) {
 		
-		new OneMinuteDemoGUI();
+		ArrayList<Game> games = OneMinuteDemoIO.readGames(new File(GAME_FOLDER));
+		
+		if (games.size() == 0) {
+			throw new IllegalArgumentException();
+		}
+		
+		new GameGUI(games.get(0));
 	}
 	
 	public OneMinuteDemoGUI() {
-		
-		
 		
 	}
 	
