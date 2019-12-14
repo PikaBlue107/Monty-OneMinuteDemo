@@ -177,6 +177,10 @@ public class Game {
 		setTime(time);
 		score = 0;
 	}
+	
+	public ArrayList<Category> getCategories() {
+		return categories;
+	}
 
 	/**
 	 * Sets the desired score adjustments for correctly and incorrectly categorized
