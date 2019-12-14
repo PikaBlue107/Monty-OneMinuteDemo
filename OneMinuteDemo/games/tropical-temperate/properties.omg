@@ -1,4 +1,6 @@
-correct=1
-incorrect=1
 instructions=Classify the following images as either tropical or temperate environments.
+increment=1
+decrement=-1
 time=60
+cycle=true
+require60=false
