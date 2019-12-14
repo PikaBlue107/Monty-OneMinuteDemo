@@ -8,11 +8,7 @@ import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
-
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ClassifiedImageTest {
@@ -31,15 +27,6 @@ public class ClassifiedImageTest {
 	@Test
 	public void test() {
 		ClassifiedImage test = null;
-
-		// Create BufferedImage for testing
-		BufferedImage image = null;
-		try {
-			image = ImageIO.read(IMAGE_FILE);
-		} catch (IOException e1) {
-			fail("Could not load test image as a BufferedImage");
-			e1.printStackTrace();
-		}
 
 		// Assert invalid make new image with null image argument
 		try {

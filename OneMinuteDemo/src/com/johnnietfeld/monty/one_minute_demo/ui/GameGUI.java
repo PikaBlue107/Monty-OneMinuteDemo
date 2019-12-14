@@ -8,6 +8,8 @@ import javax.swing.JPanel;
 
 public class GameGUI extends JPanel {
 
+	/** Generated class ID for serialization */
+	private static final long serialVersionUID = -4436194428355121272L;
 	/** Title of the window */
 	private static final String TITLE_STRING = "One Minute Game - DEMO";
 	/** Frame that holds the one minute game */
