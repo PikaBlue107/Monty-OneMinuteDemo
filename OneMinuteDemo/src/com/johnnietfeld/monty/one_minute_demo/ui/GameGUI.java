@@ -59,53 +59,53 @@ public class GameGUI extends JPanel {
 	JPanel pnlPicture;
 	/** Panel to hold categories */
 	JPanel pnlCategories;
-	
+
 	/** Game object to hold all data about this Game */
 	Game game;
-	
+
 	public GameGUI(Game toPlay) {
 		super();
-		
+
 		// Check that toPlay game is not null
 		if (toPlay == null) {
 			throw new IllegalArgumentException("Cannot start a Game GUI with a null Game");
 		}
-		
+
 		// Assign game to be played
 		game = toPlay;
-		
+
 		// Get screen size
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		
+
 		// Create fonts to use across GUI
 		Font fntHeader = new Font("San Francisco", Font.PLAIN, 20);
 		Font fntDetails = new Font("San Francisco", Font.PLAIN, 14);
-		
+
 		// Initialize common border
 		bdrGray = BorderFactory.createEtchedBorder();
-		
+
 		// Set window title, fill screen and center, exit on close
 		gui = new JFrame(TITLE_STRING);
 		gui.setLocationRelativeTo(null);
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		gui.setPreferredSize(new Dimension(screenSize.width / 2, screenSize.height / 2));
 		gui.setMinimumSize(new Dimension(500, 500));
-		
+
 		// Setup content pane for adding content
 		Container c = gui.getContentPane();
 		c.setLayout(new BorderLayout());
-		
+
 		// Create panels for main components
 		pnlMain = new JPanel();
 		pnlCategories = new JPanel();
-		
+
 		// Create header panel
 		pnlHeader = new JPanel();
 		pnlHeader.setLayout(new BoxLayout(pnlHeader, BoxLayout.Y_AXIS));
 		pnlHeader.setBorder(bdrGray);
-		
+
 		// Create top header panel for time and score
-		pnlTopHeader = new JPanel(new GridLayout(1,2));
+		pnlTopHeader = new JPanel(new GridLayout(1, 2));
 		// Panel for Time
 		pnlTime = new JPanel();
 		pnlTime.setBorder(bdrGray);
@@ -134,7 +134,7 @@ public class GameGUI extends JPanel {
 		pnlTopHeader.add(pnlScore);
 		// Add top panel to header panel
 		pnlHeader.add(pnlTopHeader);
-		
+
 		// Create bottom panel for instructions
 		pnlInstructions = new JPanel();
 //		pnlInstructions.setBorder(bdrGray);
@@ -155,20 +155,23 @@ public class GameGUI extends JPanel {
 		pnlInstructions.add(lblInstructionsValue);
 		// Add instructions panel to header panel
 		pnlHeader.add(pnlInstructions);
-		
+
 		// Add header panel to top of main frame
 		c.add(pnlHeader, BorderLayout.NORTH);
-		
+
 		// Create main panel for game content
 		pnlMain = new JPanel(new GridLayout(2, 1));
 		pnlMain.setBorder(bdrGray);
-		
+
 		// Mid panel for displaying pictures
 		pnlPicture = new JPanel();
-		
+
+		// TODO: Place picture in this frame, scale it to not be larger than each of the
+		// Category panels
+
 		// Add mid panel to main panel
 		pnlMain.add(pnlPicture);
-		
+
 		// Store Categories List for constructing panel
 		ArrayList<Category> categories = game.getCategories();
 		System.out.println(categories);
@@ -182,39 +185,35 @@ public class GameGUI extends JPanel {
 			// Create custom JLabel that will remember its Category
 			JLabel categoryLabel = new JLabel(category.getName());
 			categoryLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
-			categoryLabel.setAlignmentY(JLabel.BOTTOM_ALIGNMENT);
+			categoryLabel.setAlignmentY(JLabel.BOTTOM_ALIGNMENT); // TODO: Why is this aligning at top?
 			categoryLabel.setFont(fntHeader);
 			container.add(categoryLabel);
 			pnlCategories.add(container);
 		}
-		
+
 		// Add categories panel to main panel
 		pnlMain.add(pnlCategories);
-		
-		
-		
+
 		// Add main panel to GUI
 		c.add(pnlMain, BorderLayout.CENTER);
-		
+
 		// Finalize GUI
 		gui.setVisible(true);
-			
-		
-		
+
 	}
-	
+
 	private class CategoryPanel extends JPanel {
-		
+
 		private Category saved;
-		
+
 		public CategoryPanel(Category category) {
 			super();
 			saved = category;
 		}
-		
+
 		public Category getCategory() {
 			return saved;
 		}
 	}
-	
+
 }
