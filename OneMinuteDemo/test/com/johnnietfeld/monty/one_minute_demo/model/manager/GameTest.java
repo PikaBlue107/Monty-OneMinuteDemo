@@ -234,7 +234,7 @@ public class GameTest {
 		 * each test suite. If this test needs to be run, the following field should be
 		 * set to 'true'.
 		 */
-		boolean runTest = true;
+		boolean runTest = false;
 		if (!runTest)
 			return;
 
@@ -352,7 +352,7 @@ public class GameTest {
 		 * each test suite. If this test needs to be run, the following field should be
 		 * set to 'true'.
 		 */
-		boolean runTest = true;
+		boolean runTest = false;
 		if (!runTest)
 			return;
 
