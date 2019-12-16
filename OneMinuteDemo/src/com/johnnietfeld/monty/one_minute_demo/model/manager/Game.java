@@ -205,6 +205,7 @@ public class Game {
 		if (time <= 0) {
 			throw new IllegalArgumentException("Game time cannot be less than 1 second.");
 		}
+		this.time = time;
 	}
 
 	/**
