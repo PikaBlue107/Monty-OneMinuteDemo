@@ -10,32 +10,30 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 
 import com.johnnietfeld.monty.one_minute_demo.model.data.Category;
 import com.johnnietfeld.monty.one_minute_demo.model.data.ClassifiedImage;
 import com.johnnietfeld.monty.one_minute_demo.model.manager.Game;
+import com.johnnietfeld.monty.one_minute_demo.model.manager.ImageBuffer;
 
 public class GameGUI extends JPanel {
 
@@ -47,8 +45,6 @@ public class GameGUI extends JPanel {
 	private static final int MIN_CATEGORY_WIDTH = 200;
 	/** Minimum height in pixels for a Category: 200 */
 	private static final int MIN_CATEGORY_HEIGHT = 200;
-	/** Maximum percent of a Category's width or height that an Image may take */
-	private static final double MAX_IMAGE_RATIO = 0.75;
 	/** Minimum GUI width */
 	private static final int MIN_WIDTH = 500;
 	/** Minimum GUI height */
@@ -84,10 +80,14 @@ public class GameGUI extends JPanel {
 	ClassifyPanel cp;
 	/** Image to be dragged around the GUI */
 	DraggableImage di;
-	/** DragListener to keep track of when the user is dragging an image */
-	DragListener dl;
+	/** CategoryDragListener to keep track of when the user is dragging an image */
+	CategoryDragListener dl;
 	/** Buffer used to keep loaded images available */
 	ImageBuffer buffer;
+	/** Game timer. */
+	Timer timer;
+	/** Panel holding the draggable image. */
+	JPanel dragPanel;
 
 	public GameGUI(Game toPlay) {
 		super();
@@ -126,12 +126,14 @@ public class GameGUI extends JPanel {
 		// Create Draggable Image to place over main GUI
 		di = new DraggableImage();
 		// Create panel to hold Draggable Image
-		JPanel dragPanel = new JPanel(null);
+		dragPanel = new JPanel(null);
 		dragPanel.setOpaque(false);
 		dragPanel.add(di);
 
 		// Add draggable to final GUI
 		add(dragPanel);
+		// Create drag listener
+		dl = new CategoryDragListener();
 
 		// Create main GUI content
 		main = new JPanel(new BorderLayout());
@@ -143,27 +145,59 @@ public class GameGUI extends JPanel {
 		main.add(cp, BorderLayout.CENTER);
 		// Add main to final GUI
 		add(main);
+		
+		// Set up timer
+		setupTimer();
 
 		// Finalize GUI
 		gui.pack();
 		gui.setLocationRelativeTo(null);
 
 		// Initialize the Image Buffer with 5 elements
-		buffer = new ImageBuffer(2);
+		buffer = new ImageBuffer(5, game, cp.getCurrentCategorySize(), cp.getImageCenter());
 
 		// Load first element into DraggableImage
 		ClassifiedImage nextImage = game.nextImage();
-		System.out.println(nextImage);
 		di.transferData(new DraggableImage(nextImage));
 //		di.transferData(buffer.nextImage());
 //		buffer.prepareImage();
-		di.fitImage();
+		Point centerPoint = cp.getImageCenter();
+		centerPoint.translate(0, hp.getHeight());
+		di.fitImage(cp.getCurrentCategorySize(), centerPoint);
+		di.addMouseListener(dl);
+		di.addMouseMotionListener(dl);
 
 //		ImageResizer resizer = new ImageResizer();
 //		gui.addComponentListener(resizer);
 //		gui.addMouseListener(resizer);
 		// Run update on ClassifyPanel to use first image
 		gui.setVisible(true);
+		timer.start();
+	}
+	
+	private void setupTimer() {
+		timer = new Timer(1000, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Get current time
+				int time = Integer.parseInt(hp.lblTimeValue.getText());
+				// If time is 0
+				if (time == 0) {
+					// Stop the timer
+					timer.stop();
+					// Hide the category panel
+					// Disable the panels
+					dragPanel.setEnabled(false);
+					dragPanel.setVisible(false);
+					cp.setVisible(false);
+					cp.setEnabled(false);
+
+				}
+				// Otherwise, lower the timer
+				else {
+					hp.setTimer(time - 1);
+				}
+			}
+		});
 	}
 
 	private class HeaderPanel extends JPanel {
@@ -250,6 +284,10 @@ public class GameGUI extends JPanel {
 
 		public void updateScore(int score) {
 			lblScoreValue.setText(score + "");
+		}
+		
+		public void setTimer(int time) {
+			lblTimeValue.setText("" + time);
 		}
 
 	}
@@ -419,244 +457,6 @@ public class GameGUI extends JPanel {
 	}
 
 	/**
-	 * Custom ImageIcon gui component that allows dragging with the mouse
-	 * 
-	 * @author Melody
-	 *
-	 */
-	private class DraggableImage extends JLabel {
-
-		/** ID for serialization */
-		private static final long serialVersionUID = -1796984509726502070L;
-		/** ClassifiedImage that this DraggableImage is using for its image. */
-		private ClassifiedImage content = null;
-		/** ImageIcon being used to show BufferedImages */
-		private ImageIcon icon = null;
-		/** Dimension that the DraggableImage must fit inside */
-		private Dimension maxSize = null;
-
-		/**
-		 * Creates a DraggableImage with no saved Image.
-		 */
-		public DraggableImage() {
-			this(null);
-		}
-
-		/**
-		 * Creates a DraggableImage from the provided ClassifiedImage. Will show its
-		 * image if not null.
-		 * 
-		 * @param image ClassifiedImage to show
-		 */
-		public DraggableImage(ClassifiedImage image) {
-			super();
-			icon = new ImageIcon();
-			this.setIcon(icon);
-			maxSize = new Dimension();
-			DragListener dl = new DragListener();
-			addMouseListener(dl);
-			addMouseMotionListener(dl);
-			setSource(image);
-			// Debug
-			setBorder(bdrGray);
-		}
-
-		/**
-		 * Makes this DraggableImage use a new ClassifiedImage for its image
-		 * 
-		 * @param newImage new ClassifiedImage to use
-		 */
-		public void setSource(ClassifiedImage newImage) {
-			if (content != null)
-				content.flushLoadedImage();
-			content = newImage;
-			if (newImage != null) {
-				icon.setImage(content.getLoadedImage());
-			}
-		}
-
-		/**
-		 * Retrieves this DraggableImage's ClassifiedImage
-		 * 
-		 * @return the content field
-		 */
-		public ClassifiedImage getClassifiedImage() {
-			return content;
-		}
-
-		public void transferData(DraggableImage other) {
-			this.content = other.content;
-			this.icon.setImage(other.icon.getImage());
-			this.maxSize = other.maxSize;
-		}
-
-		/**
-		 * If the ClassifiedImage content of this DraggableImage is not null, will
-		 * resize the image to fit within a Category Panel
-		 */
-		public void fitImage() {
-			if (content == null)
-				return;
-
-			// Update max size based on current category size
-			maxSize.setSize((int) (cp.getCurrentCategorySize().width * MAX_IMAGE_RATIO),
-					(int) (cp.getCurrentCategorySize().height * MAX_IMAGE_RATIO));
-
-//			BufferedImage scaled = ensureImageWithin(content.getLoadedImage(), (BufferedImage) icon.getImage(),
-//					maxSize);
-
-			// Get the current Dimension of the image
-			Dimension currentSize = new Dimension(((BufferedImage) icon.getImage()).getWidth(),
-					((BufferedImage) icon.getImage()).getHeight()); // TODO: Try removing cast and using
-																	// ImageIcon.getIconWidth() and ...Height()
-
-			// Figure out what ratio we need to scale it by
-			double scaleRatio = 1.0;
-
-			// First, if it's smaller than the ideal size, scale it up
-			if (currentSize.getWidth() * scaleRatio < maxSize.getWidth()) {
-				scaleRatio *= maxSize.getWidth() / (currentSize.getWidth() * scaleRatio);
-			}
-			if (currentSize.getHeight() * scaleRatio < maxSize.getHeight()) {
-				scaleRatio *= maxSize.getWidth() / (currentSize.getHeight() * scaleRatio);
-			}
-			// Next, if it's larger than the ideal size, shrink it down
-			if (currentSize.getWidth() * scaleRatio > maxSize.getWidth()) {
-				scaleRatio *= maxSize.getWidth() / (currentSize.getWidth() * scaleRatio);
-			}
-			if (currentSize.getHeight() * scaleRatio > maxSize.getHeight()) {
-				scaleRatio *= maxSize.getHeight() / (currentSize.getHeight() * scaleRatio);
-			}
-
-			// If the scale ratio is 1, then we don't need to make a new BufferedImage
-			if (scaleRatio - 1.0 < 0.01 && scaleRatio - 1.0 > -0.01) {
-				return;
-			} else {
-				// Otherwise we're gonna have to scale from the source image
-				// Multiply the ratio by the difference between current scaling and source size
-				scaleRatio *= currentSize.getWidth() / content.getLoadedImage().getWidth();
-			}
-
-			// Scale ratio should be correctly calculated now
-
-			// Create new Dimension that the image will be scaled to
-			Dimension destinationSize = new Dimension((int) (currentSize.getWidth() * scaleRatio),
-					(int) (currentSize.getHeight() * scaleRatio));
-
-			// Create new BufferedImage
-			BufferedImage scaledImage = new BufferedImage((int) destinationSize.getWidth(),
-					(int) destinationSize.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-			// Create AffineTransform and Operation
-			final AffineTransform at = AffineTransform.getScaleInstance(scaleRatio, scaleRatio);
-			final AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
-
-			// Apply transformation to image
-			scaledImage = ato.filter(content.getLoadedImage(), scaledImage);
-
-			// Set image and update minimum size
-			icon.setImage(scaledImage);
-			this.setSize(destinationSize);
-
-			// Move this JLabel to center the image
-			Point centerLocation = cp.getImageCenter();
-
-			// Calculate desired location with center point and this object's width and
-			// height
-			Point desiredLocation = new Point(centerLocation.x - this.getWidth() / 2,
-					centerLocation.y - this.getHeight() / 2 + hp.getHeight());
-
-			this.setLocation(desiredLocation);
-
-		}
-
-	}
-
-	/**
-	 * Allows a component to be dragged by the mouse.
-	 * 
-	 * @author Melody
-	 *
-	 */
-	private class DragListener extends MouseAdapter {
-		/** This component's starting position */
-		private int myX, myY;
-		/** The mouse's starting position for a drag click */
-		private int screenX, screenY;
-		/** Keeps track of the Category Panel that the dragger is currently hovering */
-		CategoryPanel hoveredCategory;
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			// Save initial click location
-			screenX = e.getXOnScreen();
-			screenY = e.getYOnScreen();
-			// Save initial Component location
-			myX = di.getX();
-			myY = di.getY();
-			// Start in middle, so not over category
-			hoveredCategory = null;
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			// Return to starting position
-			di.setLocation(myX, myY);
-			gui.repaint();
-			// If we're hovering over a Category panel, process the image classification
-			if (hoveredCategory != null) {
-				System.out.println("Started drop");
-				// Set the hovered category's border back to normal
-				hoveredCategory.setBorder(bdrGray);
-				// Process the scoring of the image by the selected Category
-				game.scoreImage(di.getClassifiedImage(), hoveredCategory.getCategory());
-				// Update score
-				hp.updateScore(game.getScore());
-				// Load next image from Game
-				System.out.println("Retrieving next image");
-				di = buffer.nextImage();
-				System.out.println("Got image");
-				di.fitImage();
-				System.out.println("Resizing image");
-				// Clear hovered category from Dragger memory
-				hoveredCategory = null;
-				// Tell the Image Loader to prepare another image
-				System.out.println("Starting load");
-				buffer.prepareImage();
-				System.out.println("Finished load");
-			}
-		}
-
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			// Calculate difference between current mouse position and initial click
-			// location
-			int deltaX = e.getXOnScreen() - screenX;
-			int deltaY = e.getYOnScreen() - screenY;
-			// Create location point
-			Point location = new Point(myX + deltaX, myY + deltaY);
-			// Set location of component as a displacement from initial position
-			di.setLocation(location);
-			gui.repaint();
-
-			// Check if we need to highlight or un-highlight a Category panel
-			// Get the location of the cursor relative to the Categories Panel
-			Point locationOnCategoriesPanel = SwingUtilities.convertPoint(di, e.getPoint(), cp.getCategoriesPanel());
-			// Get the hovered panel from that point. If it's null, there's no selected
-			// panel
-			CategoryPanel foundCategory = cp.hoveredPanel(locationOnCategoriesPanel);
-
-			if (foundCategory != hoveredCategory) {
-				if (hoveredCategory != null)
-					hoveredCategory.setBorder(bdrGray);
-				hoveredCategory = foundCategory;
-				if (foundCategory != null)
-					foundCategory.setBorder(bdrHighlight);
-			}
-		}
-	}
-
-	/**
 	 * JPanel that remembers its Category for use in scoring ClassifiedImages
 	 * 
 	 * @author Melody
@@ -678,108 +478,66 @@ public class GameGUI extends JPanel {
 			return saved;
 		}
 	}
-
+	
 	/**
-	 * Holds a buffer of ClassifiedImages with loaded BufferedImages
+	 * Mouse listener that handles highlighting categories with the Draggable Image
 	 * 
 	 * @author Melody
-	 *
 	 */
-	private class ImageBuffer {
-
-		/** Internal Queue used to store ClassifiedImages */
-		private Queue<DraggableImage> queue;
-		/** Thread to load images */
-		private Thread loader;
-		/** Number of queued load events */
-		private volatile int loadsRemaining;
-
-		public ImageBuffer(int initialSize) {
-			queue = new LinkedList<DraggableImage>();
-			loadsRemaining = initialSize;
-
-			// Prepare the initial queue
-			loader = new LoaderThread();
-
-			// Load all initial Images
-			if (initialSize > 0)
-				loader.run();
+	private class CategoryDragListener extends MouseAdapter {
+		
+		/** Keeps track of the Category Panel that the dragger is currently hovering */
+		CategoryPanel hoveredCategory;
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// Start in middle, so not over category
+			hoveredCategory = null;
 		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// If we're hovering over a Category panel, process the image classification
+			if (hoveredCategory != null) {
+				// Set the hovered category's border back to normal
+				hoveredCategory.setBorder(bdrGray);
+				// Process the scoring of the image by the selected Category
+				game.scoreImage(di.getClassifiedImage(), hoveredCategory.getCategory());
+				// Update score
+				hp.updateScore(game.getScore());
+				// Load next image from Game
+				DraggableImage image = buffer.nextImage();
+				di.transferData(image);
 
-		/**
-		 * Retrieves the next image from the queue.
-		 * 
-		 * @return the nextClassifiedImage in the queue
-		 * @throws IllegalStateException if the queue is empty
-		 */
-		public DraggableImage nextImage() {
-			if (queue.isEmpty()) {
-				throw new IllegalStateException("Out of images to show!");
-			}
-
-			// Remove and return head of queue
-			return queue.poll();
-
-		}
-
-		/**
-		 * Loads the next ClassifiedImage into the queue and prepares its graphics.
-		 */
-		public void prepareImage() {
-
-			// Increment the number of loads to be done
-			loadsRemaining++;
-
-			// If the thread is dead, start it
-			if (!loader.isAlive()) {
-				loader.run();
-			}
-
-		}
-
-		/**
-		 * Gets the number of elements in the queue
-		 * 
-		 * @return the queue's size
-		 */
-		public int size() {
-			return queue.size();
-		}
-
-		/**
-		 * Thread to load images. Runs in sequence until loadsRemaining is 0
-		 * 
-		 * @author Melody
-		 *
-		 */
-		private class LoaderThread extends Thread {
-			public void run() {
-
-				System.out.println();
-
-				// Attempt to get the next ClassifiedImage from the Game's stream and load its
-				// BufferedImage
-				try {
-					ClassifiedImage buffer = game.nextImage();
-
-					buffer.loadImage();
-
-					DraggableImage newImage = new DraggableImage(buffer);
-					newImage.fitImage();
-
-					queue.add(newImage);
-
-					// If there's still loads to be done, run the thread again
-					if (--loadsRemaining >= 0) {
-						this.run();
-					}
-
-				} catch (IllegalStateException e) {
-					// Do nothing but let the list dwindle
-				}
+				// TODO: Modified herePoint centerPoint = cp.getImageCenter();
+				Point centerPoint = cp.getImageCenter();
+				centerPoint.translate(0, hp.getHeight());
+				di.fitImage(cp.getCurrentCategorySize(), centerPoint); // TODO: Needs to be scaled down category size
+				// Clear hovered category from Dragger memory
+				hoveredCategory = null;
+				// Tell the Image Loader to prepare another image
+				buffer.prepareImage();
 			}
 		}
+		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			// Check if we need to highlight or un-highlight a Category panel
+			// Get the location of the cursor relative to the Categories Panel
+			Point locationOnCategoriesPanel = SwingUtilities.convertPoint(di, e.getPoint(), cp.getCategoriesPanel());
+			// Get the hovered panel from that point. If it's null, there's no selected
+			// panel
+			CategoryPanel foundCategory = cp.hoveredPanel(locationOnCategoriesPanel);
 
+			if (foundCategory != hoveredCategory) {
+				if (hoveredCategory != null)
+					hoveredCategory.setBorder(bdrGray);
+				hoveredCategory = foundCategory;
+				if (foundCategory != null)
+					foundCategory.setBorder(bdrHighlight);
+			}
+		}
+		
 	}
 
 }

@@ -1,21 +1,17 @@
 package com.johnnietfeld.monty.one_minute_demo.model.data;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 public class ClassifiedImage { // TODO: Implement. Closable.
 
 	/** The Category this ClassifiedImage is correctly classified under */
 	private Category category;
-	/** The Image contained by this object */
-	private File image_location;
+	/** The location of the image contained by this object */
+	private String image_location;
 	/** The name of this ClassifiedImage */
 	private String name;
 	/** The image of this ClassifiedImage, loaded into memory */
-	private BufferedImage loadedImage;
+	private ImageIcon loadedImage;
 
 	/**
 	 * Makes a new ClassifiedImage with the provided Image and Category. Ensures
@@ -23,9 +19,10 @@ public class ClassifiedImage { // TODO: Implement. Closable.
 	 * 
 	 * @param image_location the BufferdImage for this Image
 	 * @param category       the Category for this Image
+	 * @param name 			 the file name for this image
 	 * @throws IllegalArgumentException if either image or category is null
 	 */
-	public ClassifiedImage(File image_location, Category category, String name) {
+	public ClassifiedImage(String image_location, Category category, String name) {
 		setImage(image_location);
 		setCategory(category);
 		setName(name);
@@ -38,7 +35,7 @@ public class ClassifiedImage { // TODO: Implement. Closable.
 	 * @param image_location the BufferedImage to set
 	 * @throws IllegalArgumentException if image is null
 	 */
-	private void setImage(File image_location) {
+	private void setImage(String image_location) {
 		if (image_location == null) {
 			throw new IllegalArgumentException("BufferedImage used to construct ClassifiedImage object cannot be null");
 		}
@@ -86,7 +83,7 @@ public class ClassifiedImage { // TODO: Implement. Closable.
 	 * 
 	 * @return the image_location field
 	 */
-	public File getImageLocation() {
+	public String getImageLocation() {
 		return this.image_location;
 	}
 
@@ -97,14 +94,12 @@ public class ClassifiedImage { // TODO: Implement. Closable.
 	 * @throws IllegalArgumentException if the image at the location saved by this
 	 *                                  ClassifiedImage cannot be loaded.
 	 */
-	public void loadImage() { // TODO: Extend, make a ClassifiedImage store and flush the BufferedImage
-								// created by this method
-		try {
-			loadedImage = ImageIO.read(image_location);
-		} catch (IOException e) {
-			throw new IllegalArgumentException(
-					"Image located at " + image_location.getAbsolutePath() + " could not be loaded.");
-		}
+	public void loadImage() {
+//		try {
+		loadedImage = new ImageIcon(image_location);
+//		} catch (IOException e) {
+//			throw new IllegalArgumentException("Image located at " + image_location + " could not be loaded.");
+//		}
 	}
 
 	/**
@@ -141,7 +136,7 @@ public class ClassifiedImage { // TODO: Implement. Closable.
 	 * @throws IllegalArgumentException if the image at the location saved by this
 	 *                                  ClassifiedImage cannot be loaded.
 	 */
-	public BufferedImage getLoadedImage() {
+	public ImageIcon getLoadedImage() {
 		if (loadedImage == null) {
 			loadImage();
 		}
@@ -154,6 +149,15 @@ public class ClassifiedImage { // TODO: Implement. Closable.
 	 */
 	public void flushLoadedImage() {
 		loadedImage = null;
+	}
+
+	/**
+	 * Tells whether this ClassifiedImage's ImageIcon is loaded or not
+	 * 
+	 * @return true if the image is loaded, false if it is not
+	 */
+	public boolean isLoaded() {
+		return loadedImage != null;
 	}
 
 	@Override

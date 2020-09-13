@@ -4,7 +4,6 @@
 package com.johnnietfeld.monty.one_minute_demo.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -22,47 +21,49 @@ public class OneMinuteDemoGUI extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 8133686128543162596L;
-	
+
 	private static final String GAME_FOLDER = "games";
 
 	/**
-	 * Initializes the program by making a 
+	 * Initializes the program by making a
 	 * 
-	 * @param args
+	 * @param args commandline arguments
 	 */
 	public static void main(String[] args) {
-		
-		ArrayList<Game> games = OneMinuteDemoIO.readGames(new File(GAME_FOLDER));
-		
-		if (games.size() == 0) {
-			throw new IllegalArgumentException();
-		}
-		
-		new GameGUI(games.get(0));
+		new OneMinuteDemoGUI();
 	}
-	
+
 	public OneMinuteDemoGUI() {
-		
+		File loadFile;
+		Game game = null;
+		while (game == null) {
+			try {
+				loadFile = getLoadFile();
+				game = OneMinuteDemoIO.readGameFolder(loadFile);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
+		}
+
+		new GameGUI(game);
 	}
-	
-	private String getLoadFile() {
-		
+
+	private File getLoadFile() {
+
 		// Make a File Chooser to pick the folder to be loaded from
-		JFileChooser fileChooser = new JFileChooser("./");
+		JFileChooser fileChooser = new JFileChooser("./" + GAME_FOLDER +  "/");
 		fileChooser.setApproveButtonText("Select");
-		
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
 		int returnVal = fileChooser.showOpenDialog(this);
-		
+
 		if (returnVal != JFileChooser.APPROVE_OPTION) {
 			// Error or user canceled, either way no file name.
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("No file selected!");
 		}
-		
-		File loadFile = fileChooser.getSelectedFile();
-		return loadFile.getAbsolutePath();
-		
-		
+
+		return fileChooser.getSelectedFile();
+
 	}
-	
 
 }

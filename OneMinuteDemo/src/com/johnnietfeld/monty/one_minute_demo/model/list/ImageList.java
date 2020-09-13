@@ -71,7 +71,7 @@ public class ImageList implements Iterable<ClassifiedImage> {
 	 * Sets whether or not the list of images is scrambled between cycles. Does
 	 * nothing if cycles() is false;
 	 * 
-	 * @param assignment
+	 * @param assignment true for randomize image order on cycle reset, else false
 	 */
 	public void setRandomizeCycle(boolean assignment) {
 		this.randomizeCycle = assignment;

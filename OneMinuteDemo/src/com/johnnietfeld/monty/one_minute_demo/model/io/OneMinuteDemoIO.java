@@ -413,7 +413,7 @@ public class OneMinuteDemoIO {
 		// Iterate through all files in the folder
 		for (File imageFile : imageFiles) {
 			// Create a new ClassifiedImage object
-			ClassifiedImage image = new ClassifiedImage(imageFile, category, imageFile.getName());
+			ClassifiedImage image = new ClassifiedImage(imageFile.getAbsolutePath(), category, imageFile.getName());
 			// Add image to the list of images
 			images.add(image);
 		}

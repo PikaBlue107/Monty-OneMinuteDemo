@@ -6,8 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
+import javax.swing.ImageIcon;
 
 import org.junit.Test;
 
@@ -15,8 +14,6 @@ public class ClassifiedImageTest {
 
 	/** String of the file path of the Image used for testing */
 	private static final String IMAGE_PATH_STRING = "test-files/a.jpg";
-	/** File object of an image used for testing */
-	private static final File IMAGE_FILE = new File(IMAGE_PATH_STRING);
 	/** String used to make the Category used in testing */
 	private static final String CATEGORY_STRING = "Cat";
 	/** Category used for testing */
@@ -38,7 +35,7 @@ public class ClassifiedImageTest {
 
 		// Assert invalid make new image with null category argument
 		try {
-			test = new ClassifiedImage(IMAGE_FILE, null, NAME);
+			test = new ClassifiedImage(IMAGE_PATH_STRING, null, NAME);
 			fail();
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
@@ -46,7 +43,7 @@ public class ClassifiedImageTest {
 
 		// Assert invalid make new image with null name argument
 		try {
-			test = new ClassifiedImage(IMAGE_FILE, CATEGORY, null);
+			test = new ClassifiedImage(IMAGE_PATH_STRING, CATEGORY, null);
 			fail();
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
@@ -54,7 +51,7 @@ public class ClassifiedImageTest {
 
 		// Assert invalid make new image with blank name argument
 		try {
-			test = new ClassifiedImage(IMAGE_FILE, CATEGORY, "   ");
+			test = new ClassifiedImage(IMAGE_PATH_STRING, CATEGORY, "   ");
 			fail();
 		} catch (IllegalArgumentException e) {
 			assertNull(test);
@@ -62,21 +59,22 @@ public class ClassifiedImageTest {
 
 		// Assert valid make new image with valid data
 		try {
-			test = new ClassifiedImage(IMAGE_FILE, CATEGORY, NAME);
-			assertEquals(IMAGE_FILE, test.getImageLocation());
+			test = new ClassifiedImage(IMAGE_PATH_STRING, CATEGORY, NAME);
+			assertEquals(IMAGE_PATH_STRING, test.getImageLocation());
 			assertEquals(CATEGORY, test.getCategory());
 			assertEquals(NAME, test.getName());
 
 			// Test that loadImage is working seemingly correctly
-			BufferedImage testImage = test.getLoadedImage();
-			assertTrue(testImage instanceof BufferedImage);
-			assertEquals(500, testImage.getWidth());
-			assertEquals(500, testImage.getHeight());
+			ImageIcon testImage = test.getLoadedImage();
+			assertTrue(testImage instanceof ImageIcon);
+			System.out.println(testImage.getImage().getClass().getName());
+			assertEquals(500, testImage.getIconWidth());
+			assertEquals(500, testImage.getIconHeight());
 
 			// Test that clearing an image is working properly
 			test.flushLoadedImage();
 			// Retrieve new BufferedImage, assert that they are not equal references
-			BufferedImage newLoadedImage = test.getLoadedImage();
+			ImageIcon newLoadedImage = test.getLoadedImage();
 			// Assert that both BufferedImages are different references and not the same
 			// object
 			assertFalse(testImage == newLoadedImage);
@@ -96,7 +94,7 @@ public class ClassifiedImageTest {
 
 	@Test
 	public void testToString() {
-		ClassifiedImage test = new ClassifiedImage(IMAGE_FILE, CATEGORY, NAME);
+		ClassifiedImage test = new ClassifiedImage(IMAGE_PATH_STRING, CATEGORY, NAME);
 		assertEquals(NAME + ": " + CATEGORY_STRING, test.toString());
 	}
 

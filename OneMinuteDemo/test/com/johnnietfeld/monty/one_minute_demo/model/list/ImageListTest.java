@@ -83,7 +83,7 @@ public class ImageListTest {
 			String name = image_loc.getName();
 
 			// Make a new ClassifiedImage to be added
-			ClassifiedImage classImg = new ClassifiedImage(image_loc, images.size() == 0 ? one : two, name);
+			ClassifiedImage classImg = new ClassifiedImage(image_loc.getAbsolutePath(), images.size() == 0 ? one : two, name);
 			// Print the amount of memory consumed by this ClassifiedImage
 			System.out.println(classImg.getClass());
 			// Add classified image to images List
@@ -93,7 +93,7 @@ public class ImageListTest {
 			printMemory();
 
 			// Make a second ClassifiedImage. These will all have the same Category.
-			ClassifiedImage invalidImg = new ClassifiedImage(image_loc, one, name);
+			ClassifiedImage invalidImg = new ClassifiedImage(image_loc.getAbsolutePath(), one, name);
 			// Add this classified image to the invalid images list
 			invalidImages.add(invalidImg);
 
